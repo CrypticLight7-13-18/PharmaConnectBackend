@@ -8,7 +8,6 @@ import router from "./routes/index.js";
 import handleSocket from "./sockets/chatSockets.js";
 import cookieParser from "cookie-parser";
 
-
 dotenv.config();
 connectDB();
 
@@ -23,21 +22,17 @@ const io = new Server(server, {
     methods: ["GET", "POST", "PUT", "DELETE"],
   },
 });
-//allow port 5173 for Vite development server
+// CORS – allow any origin (development) while sending credentials
 app.use(
   cors({
-    origin: [
-      "https://fantastic-goggles-57g4pxpqqjjhv47g-5173.app.github.dev",
-      "http://localhost:5173",
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: (origin, callback) => callback(null, true), // reflect origin
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
   })
 );
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api", router);
-
 
 handleSocket(io);
 

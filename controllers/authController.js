@@ -133,6 +133,17 @@ export const logout = (req, res) => {
  * @throws {AppError} - Throws an error if token is missing, invalid, or user has changed password.
  */
 export const protect = catchAsync(async (req, res, next) => {
+  // Development bypass – if SKIP_AUTH=true, attach first user found
+  if (process.env.SKIP_AUTH === "true") {
+    const devUser = (await Patient.findOne()) || (await Doctor.findOne());
+    if (!devUser) {
+      return next(
+        new AppError("No users in database to attach as dev user", 500)
+      );
+    }
+    req.user = devUser;
+    return next();
+  }
   let token;
 
   if (
