@@ -55,6 +55,10 @@ const orderSchema = new mongoose.Schema(
       enum: ["pending", "delivered", "cancelled"],
       default: "pending",
     },
+    paymentStatus: {
+      type: String,
+      enum: ["paid", "pending"],
+    },
     deliveryDate: {
       type: Date,
       required: [true, "Please provide a delivery date!"],
@@ -63,6 +67,9 @@ const orderSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please provide a shipping address!"],
     },
+    stripeSessionId: {
+      type: String,
+    }
   },
   {
     timestamps: true,

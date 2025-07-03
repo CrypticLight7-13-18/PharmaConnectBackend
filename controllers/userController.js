@@ -42,6 +42,7 @@ export const getUserProfileData = asyncHandler(async (req, res, next) => {
  */
 export const getMe = asyncHandler(async (req, res, next) => {
   let user;
+
   if (req.user.role === "patient") {
     user = await Patient.findById(req.user.id);
   } else if (req.user.role === "doctor") {
