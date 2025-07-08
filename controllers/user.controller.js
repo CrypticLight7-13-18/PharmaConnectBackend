@@ -11,15 +11,14 @@ import Doctor from "../models/doctor.model.js";
  */
 export const getUserProfileData = asyncHandler(async (req, res, next) => {
   let user;
-  
+
   if (req.user.role === "patient") {
     user = await Patient.findById(req.user.id)
-      .populate('appointmentIds')
-      .populate('chatIds')
-      .populate('orderIds');
+      .populate("appointmentIds")
+      .populate("chatIds")
+      .populate("orderIds");
   } else if (req.user.role === "doctor") {
-    user = await Doctor.findById(req.user.id)
-      .populate('appointmentIds');
+    user = await Doctor.findById(req.user.id).populate("appointmentIds");
   }
 
   if (!user) {
@@ -56,8 +55,8 @@ export const getMe = asyncHandler(async (req, res, next) => {
   let userObj = user.toObject();
   delete userObj.password;
   delete userObj.passwordConfirm;
-  Object.keys(userObj).forEach(key => {
-    if (key.endsWith('Ids')) delete userObj[key];
+  Object.keys(userObj).forEach((key) => {
+    if (key.endsWith("Ids")) delete userObj[key];
   });
 
   res.status(200).json({

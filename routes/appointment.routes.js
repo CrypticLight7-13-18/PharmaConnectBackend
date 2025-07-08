@@ -1,3 +1,17 @@
+/**
+ * Express router for appointment-related routes.
+ * Maps HTTP endpoints to controller functions with appropriate access restrictions.
+ *
+ * Routes:
+ * - POST   /api/appointments/         : Create a new appointment (patients only)
+ * - DELETE /api/appointments/:id      : Delete an appointment by ID (patients only)
+ * - PATCH  /api/appointments/:id      : Update an appointment by ID (patients only)
+ * - GET    /api/appointments/         : Get all appointments for the authenticated user (patient or doctor)
+ * - PATCH  /api/appointments/:id/report : Update appointment report/status (doctors only)
+ *
+ * @module routes/appointment
+ */
+
 import express from "express";
 import * as appointmentController from "../controllers/appointment.controller.js";
 import { restrictTo } from "../middlewares/restrict.middleware.js";
@@ -6,37 +20,53 @@ const router = express.Router();
 
 /**
  * @route POST /api/appointments/
- * @desc creates an appointment
- * @access Private
+ * @desc Creates an appointment.
+ * @access Private (patients only)
  */
-router.post("/", restrictTo("patient"), appointmentController.createAppointment);
+router.post(
+  "/",
+  restrictTo("patient"),
+  appointmentController.createAppointment
+);
 
 /**
  * @route DELETE /api/appointments/:id
- * @desc Deletes an appointment by given id
- * @access Private
+ * @desc Deletes an appointment by given ID.
+ * @access Private (patients only)
  */
-router.delete("/:id", restrictTo("patient"), appointmentController.deleteAppointment);
+router.delete(
+  "/:id",
+  restrictTo("patient"),
+  appointmentController.deleteAppointment
+);
 
 /**
- * @route PUT /api/appointments/:id
- * @desc Updates an appointment by given id
- * @access Private
+ * @route PATCH /api/appointments/:id
+ * @desc Updates an appointment by given ID.
+ * @access Private (patients only)
  */
-router.patch("/:id", restrictTo("patient"), appointmentController.updateAppointment);
+router.patch(
+  "/:id",
+  restrictTo("patient"),
+  appointmentController.updateAppointment
+);
 
 /**
  * @route GET /api/appointments/
- * @desc Gets all appointments of user (patient or Doctor)
+ * @desc Gets all appointments of the authenticated user (patient or doctor).
  * @access Private
  */
 router.get("/", appointmentController.getAllAppointments);
 
 /**
- * @route PATCH /api/appointments/:id/status
- * @desc Updates appointment status (for doctors to mark as completed and upload report)
- * @access Private
+ * @route PATCH /api/appointments/:id/report
+ * @desc Updates appointment status and uploads a report (doctors only).
+ * @access Private (doctors only)
  */
-router.patch("/:id/report", restrictTo("Doctor") , appointmentController.updateAppointmentReport);
+router.patch(
+  "/:id/report",
+  restrictTo("Doctor"),
+  appointmentController.updateAppointmentReport
+);
 
 export default router;

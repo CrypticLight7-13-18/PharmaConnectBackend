@@ -7,12 +7,12 @@ import AppError from "../utils/app-error.utils.js";
  * @throws {AppError} - Throws an error if user does not have permission.
  */
 export const restrictTo =
-    (...roles) =>
-    (req, res, next) => {
-        if (!roles.includes(req.user.role)) {
-            return next(
-                new AppError("You do not have permission to perform this action.", 403)
-            );
-        }
-        next();
-    };
+  (...roles) =>
+  (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError("You do not have permission to perform this action.", 403)
+      );
+    }
+    next();
+  };

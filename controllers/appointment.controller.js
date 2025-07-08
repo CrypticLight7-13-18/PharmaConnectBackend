@@ -4,6 +4,14 @@ import Patient from "../models/patient.model.js";
 import AppError from "../utils/app-error.utils.js";
 import asyncHandler from "../utils/async-handler.utils.js";
 
+/**
+ * Creates a new appointment for a patient with a doctor.
+ * Checks for doctor existence and slot availability, then creates and links the appointment.
+ * @param {Object} req - The request object containing appointment details and authenticated user.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ * @throws {AppError} - If the doctor is not found or the slot is already booked.
+ */
 export const createAppointment = asyncHandler(async (req, res, next) => {
   const { doctorId, appointmentDate, appointmentTime } = req.body;
   const patientId = req.user._id;
@@ -18,7 +26,8 @@ export const createAppointment = asyncHandler(async (req, res, next) => {
     status: { $ne: "Cancelled" },
   });
 
-  if (existingAppointment) return next(new AppError("This time slot is already booked", 406));
+  if (existingAppointment)
+    return next(new AppError("This time slot is already booked", 406));
 
   const appointment = await Appointment.create({
     patientId,
@@ -48,6 +57,12 @@ export const createAppointment = asyncHandler(async (req, res, next) => {
   });
 });
 
+/**
+ * Retrieves all appointments for the authenticated user (patient or doctor).
+ * @param {Object} req - The request object containing user information.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ */
 export const getAllAppointments = asyncHandler(async (req, res, next) => {
   const userId = req.user._id;
   const userRole = req.user.role;
@@ -71,6 +86,13 @@ export const getAllAppointments = asyncHandler(async (req, res, next) => {
   });
 });
 
+/**
+ * Retrieves a specific appointment by ID if the user is the patient or doctor involved.
+ * @param {Object} req - The request object containing the appointment ID and user info.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ * @throws {AppError} - If the appointment is not found or access is denied.
+ */
 export const getAppointment = asyncHandler(async (req, res, next) => {
   const appointment = await Appointment.findById(req.params.id)
     .populate("doctorId")
@@ -85,7 +107,10 @@ export const getAppointment = asyncHandler(async (req, res, next) => {
   if (
     appointment.patientId._id.toString() !== userId ||
     appointment.doctorId._id.toString() !== userId
-  ) return next(new AppError("You do not have access to this appointment", 403));
+  )
+    return next(
+      new AppError("You do not have access to this appointment", 403)
+    );
 
   res.status(200).json({
     status: "success",
@@ -95,6 +120,15 @@ export const getAppointment = asyncHandler(async (req, res, next) => {
   });
 });
 
+/**
+ * Updates the date or time of an existing appointment.
+ * Only the patient who created the appointment can update it, and only if it's pending.
+ * Checks for slot conflicts before updating.
+ * @param {Object} req - The request object containing update data and user info.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ * @throws {AppError} - If the appointment is not found, not owned by the user, not pending, or the slot is booked.
+ */
 export const updateAppointment = asyncHandler(async (req, res, next) => {
   const { appointmentDate, appointmentTime } = req.body;
   const appointment = await Appointment.findById(req.params.id);
@@ -142,6 +176,14 @@ export const updateAppointment = asyncHandler(async (req, res, next) => {
   });
 });
 
+/**
+ * Cancels an appointment by marking its status as "Cancelled".
+ * Only the patient who created the appointment can cancel it.
+ * @param {Object} req - The request object containing the appointment ID and user info.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ * @throws {AppError} - If the appointment is not found or not owned by the user.
+ */
 export const deleteAppointment = asyncHandler(async (req, res, next) => {
   const appointment = await Appointment.findById(req.params.id);
 
@@ -162,6 +204,14 @@ export const deleteAppointment = asyncHandler(async (req, res, next) => {
   });
 });
 
+/**
+ * Updates the consultation report and marks the appointment as "Completed".
+ * Only the doctor who owns the appointment can update the report.
+ * @param {Object} req - The request object containing the report and user info.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ * @throws {AppError} - If the appointment is not found or not owned by the doctor.
+ */
 export const updateAppointmentReport = asyncHandler(async (req, res, next) => {
   const { consultationReport } = req.body;
   const appointment = await Appointment.findById(req.params.id);

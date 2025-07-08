@@ -3,6 +3,14 @@ import Appointment from "../models/appointment.model.js";
 import asyncHandler from "../utils/async-handler.utils.js";
 import AppError from "../utils/app-error.utils.js";
 
+/**
+ * Retrieves a filtered, sorted, and paginated list of doctors based on query parameters.
+ * Supports filtering by specialization, location, maximum fee, and search keyword.
+ * Results can be sorted by fee or experience, and paginated.
+ * @param {Object} req - The request object containing query parameters for filtering, sorting, and pagination.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ */
 export const getAllDoctors = asyncHandler(async (req, res, next) => {
   const {
     specialization,
@@ -67,6 +75,14 @@ export const getAllDoctors = asyncHandler(async (req, res, next) => {
   });
 });
 
+/**
+ * Retrieves detailed information of a specific doctor by ID.
+ * Excludes sensitive fields like password and password confirmation.
+ * @param {Object} req - The request object containing the doctor ID in params.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ * @throws {AppError} - If the doctor is not found.
+ */
 export const getDoctor = asyncHandler(async (req, res, next) => {
   const doctor = await Doctor.findById(req.params.id).select(
     "-password -passwordConfirm"
@@ -84,6 +100,14 @@ export const getDoctor = asyncHandler(async (req, res, next) => {
   });
 });
 
+/**
+ * Retrieves the availability slots for a doctor on a specified date.
+ * Returns available time slots after excluding already booked appointments.
+ * @param {Object} req - The request object containing the doctor ID in params and date in query.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ * @throws {AppError} - If the date is missing or the doctor is not found.
+ */
 export const getDoctorAvailability = asyncHandler(async (req, res, next) => {
   const { date } = req.query;
   const doctorId = req.params.id;
