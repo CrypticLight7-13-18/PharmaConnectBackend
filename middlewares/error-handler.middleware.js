@@ -1,4 +1,4 @@
-import AppError from '../utils/appError.js';
+import AppError from '../utils/app-error.utils.js';
 
 /**
  * Handles database CastError and returns a formatted AppError.
@@ -58,11 +58,11 @@ const sendErrDev = (err, req, res) => {
       stack: err.stack,
     });
   }
-  // Render error page for non-API requests in development
-  // res.status(err.statusCode).render('error', {
-  //   title: 'Something went wrong!',
-  //   msg: err.message,
-  // });
+
+  res.status(err.statusCode).render('error', {
+    title: 'Something went wrong!',
+    msg: err.message,
+  });
 };
 
 /**
@@ -73,6 +73,7 @@ const sendErrDev = (err, req, res) => {
  */
 const sendErrProd = (err, req, res) => {
   if (req.originalUrl.startsWith('/api')) {
+    
     // Operational/Trusted Errors: Send message to client
     if (err.isOperational) {
       return res.status(err.statusCode).json({
@@ -80,17 +81,16 @@ const sendErrProd = (err, req, res) => {
         message: err.message,
       });
     }
-    // Programming or other unknown error: don't leak error information to client
-    console.log('ERROR ❗️');
 
-    // Send generic message to client
+    // Programming or other unknown error: don't leak error information to client
+    console.error('ERROR ❗️');
+
     return res.status(500).json({
       status: 'error',
       message: 'Something went wrong!',
     });
   }
   
-  // Operational/Trusted Errors: Send message to client
   if (err.isOperational) {
     return res.status(err.statusCode).render('error', {
       title: 'Something went wrong!',
@@ -98,10 +98,8 @@ const sendErrProd = (err, req, res) => {
     });
   }
   
-  // Programming or other unknown error: don't leak error information to client
-  console.log('ERROR ❗️');
+  console.error('ERROR ❗️');
 
-  // Send generic message to client
   return res.status(err.statusCode).render('error', {
     title: 'Something went wrong!',
     msg: 'Please try again later',

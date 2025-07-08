@@ -1,9 +1,9 @@
 import jwt from "jsonwebtoken";
 import ms from "ms";
-import Patient from "../models/patientModel.js";
-import Doctor from "../models/doctorModel.js";
-import AppError from "../utils/appError.js";
-import asyncHandler from "../utils/asyncHandler.js";
+import Patient from "../models/patient.model.js";
+import Doctor from "../models/doctor.model.js";
+import AppError from "../utils/app-error.utils.js";
+import asyncHandler from "../utils/async-handler.utils.js";
 
 /**
  * Creates a JWT token for a given user ID.
@@ -24,14 +24,8 @@ const signToken = (id) => {
  * @param {Object} res - The response object.
  */
 const createSendToken = (user, statusCode, req, res) => {
-    // Create a token
     const token = signToken(user._id);
-
-    // Convert cookie expiry time - JWT_COOKIE_EXPIRY_TIME is "2d", so calculate 2 days in milliseconds
-    // Using ms library to handle "2d" format
-    const expiresInMS = ms(process.env.JWT_COOKIE_EXPIRY_TIME) * 1000; // 2 days in milliseconds
-
-    // Set cookie options
+    const expiresInMS = ms(process.env.JWT_COOKIE_EXPIRY_TIME) * 1000;
     const cookieOptions = {
         expires: new Date(Date.now() + expiresInMS),
         httpOnly: true,
@@ -39,13 +33,10 @@ const createSendToken = (user, statusCode, req, res) => {
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     };
 
-    // Send the token as a cookie
     res.cookie("jwt", token, cookieOptions);
 
-    // Hide user password from response
     user.password = undefined;
 
-    // Send response with token and user data
     res.status(statusCode).json({
         status: "success",
         token,
@@ -67,15 +58,11 @@ export const login = asyncHandler(async(req, res, next) => {
         return next(new AppError("Please enter email and password", 400));
     }
 
-    // Select the correct model based on role
     let model;
-    if (role === "patient") {
-        model = Patient;
-    } else if (role === "doctor") {
-        model = Doctor;
-    } else {
-        return next(new AppError("Invalid role specified", 400));
-    }
+
+    if (role === "patient") model = Patient;
+    else if (role === "doctor") model = Doctor;
+    else return next(new AppError("Invalid role specified", 400));
 
     const user = await model.findOne({ email }).select("+password");
 
@@ -95,15 +82,10 @@ export const login = asyncHandler(async(req, res, next) => {
 export const signUp = asyncHandler(async(req, res, next) => {
     const { role } = req.body;
 
-    // Select the correct model based on role
     let model;
-    if (role === "patient") {
-        model = Patient;
-    } else if (role === "doctor") {
-        model = Doctor;
-    } else {
-        return next(new AppError("Invalid role specified", 400));
-    }
+    if (role === "patient") model = Patient;
+    else if (role === "doctor") model = Doctor;
+    else  return next(new AppError("Invalid role specified", 400));
 
     const newUser = await model.create(req.body);
     createSendToken(newUser, 201, req, res);

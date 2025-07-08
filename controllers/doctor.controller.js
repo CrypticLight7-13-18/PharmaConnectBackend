@@ -1,9 +1,8 @@
-import Doctor from "../models/doctorModel.js";
-import Appointment from "../models/appointmentModel.js";
-import asyncHandler from "../utils/asyncHandler.js";
-import AppError from "../utils/appError.js";
+import Doctor from "../models/doctor.model.js";
+import Appointment from "../models/appointment.model.js";
+import asyncHandler from "../utils/async-handler.utils.js";
+import AppError from "../utils/app-error.utils.js";
 
-// Get all doctors with filtering
 export const getAllDoctors = asyncHandler(async (req, res, next) => {
   const {
     specialization,
@@ -17,7 +16,6 @@ export const getAllDoctors = asyncHandler(async (req, res, next) => {
 
   let query = {};
 
-  // Apply filters
   if (specialization) {
     query.specialization = specialization;
   }
@@ -38,7 +36,6 @@ export const getAllDoctors = asyncHandler(async (req, res, next) => {
     ];
   }
 
-  // Sorting
   let sort = {};
   switch (sortBy) {
     case "fee":
@@ -70,7 +67,6 @@ export const getAllDoctors = asyncHandler(async (req, res, next) => {
   });
 });
 
-// Get single doctor
 export const getDoctor = asyncHandler(async (req, res, next) => {
   const doctor = await Doctor.findById(req.params.id).select(
     "-password -passwordConfirm"
@@ -88,7 +84,6 @@ export const getDoctor = asyncHandler(async (req, res, next) => {
   });
 });
 
-// Get doctor availability
 export const getDoctorAvailability = asyncHandler(async (req, res, next) => {
   const { date } = req.query;
   const doctorId = req.params.id;
@@ -102,15 +97,12 @@ export const getDoctorAvailability = asyncHandler(async (req, res, next) => {
     return next(new AppError("Doctor not found", 404));
   }
 
-  // Get day of week
-
   const dayOfWeek = new Date(date)
     .toLocaleDateString("en-US", { weekday: "long" })
     .toLowerCase();
 
   const availableSlots = doctor.availability[dayOfWeek] || [];
 
-  // Get booked appointments for that date
   const bookedAppointments = await Appointment.find({
     doctorId,
     appointmentDate: new Date(date),
@@ -131,9 +123,3 @@ export const getDoctorAvailability = asyncHandler(async (req, res, next) => {
     },
   });
 });
-
-export const doctorController = {
-  getAllDoctors,
-  getDoctor,
-  getDoctorAvailability,
-};

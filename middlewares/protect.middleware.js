@@ -1,9 +1,9 @@
 import { promisify } from "util";
 import jwt from "jsonwebtoken";
-import asyncHandler from "../utils/asyncHandler.js";
-import AppError from "../utils/appError.js";
-import Patient from "../models/patientModel.js";
-import Doctor from "../models/doctorModel.js";
+import asyncHandler from "../utils/async-handler.utils.js";
+import AppError from "../utils/app-error.utils.js";
+import Patient from "../models/patient.model.js";
+import Doctor from "../models/doctor.model.js";
 
 /**
  * Middleware to protect routes by verifying the JWT token and setting `req.user`.
@@ -25,7 +25,6 @@ export default asyncHandler(async (req, res, next) => {
   }
 
   if (!token) {
-    console.log("No token found - returning 401");
     return next(
       new AppError("You are not logged in. Please log in to access this.", 401)
     );
@@ -50,7 +49,6 @@ export default asyncHandler(async (req, res, next) => {
     next();
   } catch (err) {
     if (err.name === "TokenExpiredError") {
-      console.log(`Token expired at: ${err.expiredAt}`);
       return next(new AppError("Token expired, please log in again.", 401));
     }
     if (err.name === "JsonWebTokenError") {

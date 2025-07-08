@@ -1,6 +1,7 @@
 import express from "express";
-import { appointmentController } from "../controllers/appointmentController.js";
-import { restrictTo } from "../middlewares/restrictTo.js";
+import * as appointmentController from "../controllers/appointment.controller.js";
+import { restrictTo } from "../middlewares/restrict.middleware.js";
+
 const router = express.Router();
 
 /**
@@ -8,21 +9,21 @@ const router = express.Router();
  * @desc creates an appointment
  * @access Private
  */
-router.post("/", restrictTo("patient") ,appointmentController.createAppointment);
+router.post("/", restrictTo("patient"), appointmentController.createAppointment);
 
 /**
  * @route DELETE /api/appointments/:id
  * @desc Deletes an appointment by given id
  * @access Private
  */
-router.delete("/:id", restrictTo("patient") ,appointmentController.deleteAppointment);
+router.delete("/:id", restrictTo("patient"), appointmentController.deleteAppointment);
 
 /**
  * @route PUT /api/appointments/:id
  * @desc Updates an appointment by given id
  * @access Private
  */
-router.patch("/:id", restrictTo("patient") ,appointmentController.updateAppointment);
+router.patch("/:id", restrictTo("patient"), appointmentController.updateAppointment);
 
 /**
  * @route GET /api/appointments/

@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
-import Chat from '../models/chatModel.js';
-import Patient from '../models/patientModel.js';
-import Doctor from '../models/doctorModel.js';
+import Chat from '../models/chat.model.js';
+import Patient from '../models/patient.model.js';
+import Doctor from '../models/doctor.model.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -45,15 +45,12 @@ const DUMMY_CHATS = [
 
 async function seedChatsAndAssign() {
   await mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
-  // Remove all existing chats
   await Chat.deleteMany({});
-  // Create dummy chats
+
   const createdChats = await Chat.insertMany(DUMMY_CHATS);
   const chatIds = createdChats.map(chat => chat._id);
 
-  // Assign to all patients
   await Patient.updateMany({}, { $set: { chatIds } });
-  // Assign to all doctors (if you want doctors to have these chats too)
   await Doctor.updateMany({}, { $set: { chatIds } });
 
   console.log('Dummy chats created and assigned to all users.');

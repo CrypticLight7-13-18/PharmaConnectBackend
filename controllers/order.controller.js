@@ -1,14 +1,12 @@
-import Order from "../models/orderModel.js";
-import Medicine from "../models/medicineModel.js";
-import AppError from "../utils/appError.js";
-import asyncHandler from "../utils/asyncHandler.js";
+import Order from "../models/order.model.js";
+import Medicine from "../models/medicine.model.js";
+import AppError from "../utils/app-error.utils.js";
+import asyncHandler from "../utils/async-handler.utils.js";
 
-// Create new order
 export const createOrder = asyncHandler(async (req, res, next) => {
     const customerId = req.user._id;
     const { cart, address, deliveryDate } = req.body;
 
-    // Validate and calculate total price
     let totalPrice = 0;
     const validatedItems = [];
 
@@ -33,7 +31,7 @@ export const createOrder = asyncHandler(async (req, res, next) => {
       totalPrice,
       shippingAddress: address,
       deliveryDate:
-        deliveryDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+        deliveryDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
     const savedOrder = await order.save();
@@ -47,7 +45,6 @@ export const createOrder = asyncHandler(async (req, res, next) => {
     });
 });
 
-// Get order by ID
 export const getOrderById = asyncHandler(async (req, res, next) => {
     const order = await Order.findById(req.params.id)
       .populate("customerId", "name email")
@@ -64,7 +61,6 @@ export const getOrderById = asyncHandler(async (req, res, next) => {
 
 });
 
-// Get all orders for a user
 export const getUserOrders = asyncHandler(async (req, res, next) => {
     const { userId } = req.params;
     const { page = 1, limit = 10, status } = req.query;
@@ -95,7 +91,6 @@ export const getUserOrders = asyncHandler(async (req, res, next) => {
 
 });
 
-// Get all orders (admin only)
 export const getAllOrders = asyncHandler(async (req, res, next) => {
     const { page = 1, limit = 10, status } = req.query;
 
@@ -126,7 +121,6 @@ export const getAllOrders = asyncHandler(async (req, res, next) => {
 
 });
 
-// Update order status (admin only)
 export const updateOrderStatus = asyncHandler(async (req, res, next) => {
     const { status } = req.body;
     const validStatuses = ["pending", "delivered", "cancelled"];
@@ -156,7 +150,6 @@ export const updateOrderStatus = asyncHandler(async (req, res, next) => {
 
 });
 
-// Cancel order
 export const cancelOrder = asyncHandler(async (req, res, next) => {
     const order = await Order.findById(req.params.id);
 

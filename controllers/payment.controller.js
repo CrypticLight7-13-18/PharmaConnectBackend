@@ -1,32 +1,29 @@
-// routes/payment.js
-import express from "express";
+import AppError from "../utils/app-error.utils.js";
+import asyncHandler from "../utils/async-handler.utils.js";
 import Stripe from "stripe";
-import Order from "../models/orderModel.js";
+import Order from "../models/order.model.js";
 
-const router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_BACKEND_SECRET);
 const FRONTEND_URL = process.env.FRONTEND_URL;
 
-router.post("/create-checkout-session", async (req, res) => {
-  const { orderData } = req.body;
-  const paymentMethodTypes = ["card"];
-
-  let lineItems = [];
-
-  try {
-    // If orderData with cart is provided, use it to create line items
+export const createCheckoutSession = asyncHandler(async (req, res) => {
+    const { orderData } = req.body;
+    const paymentMethodTypes = ["card"];
+    
+    let lineItems = [];
+    
     if (orderData && orderData.cart && orderData.cart.length > 0) {
-      lineItems = orderData.cart.map((item) => ({
-        price_data: {
-          currency: "inr",
-          product_data: {
-            name: item.name,
-            description: item.description || `Medicine: ${item.name}`,
-          },
-          unit_amount: Math.round(item.price * 100), // Convert to paise
-        },
-        quantity: item.qty || 1,
-      }));
+        lineItems = orderData.cart.map((item) => ({
+            price_data: {
+                currency: "inr",
+                product_data: {
+                    name: item.name,
+                    description: item.description || `Medicine: ${item.name}`,
+                },
+                unit_amount: Math.round(item.price * 100),
+            },
+            quantity: item.qty || 1,
+        }));
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -36,7 +33,6 @@ router.post("/create-checkout-session", async (req, res) => {
       success_url: `${FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${FRONTEND_URL}/cancel`,
       metadata: {
-        // Store order information in metadata
         orderId: orderData?.orderId || "",
         address: orderData?.address || "",
         orderTotal: orderData?.total?.toString() || "",
@@ -45,22 +41,16 @@ router.post("/create-checkout-session", async (req, res) => {
     });
 
     res.send({ id: session.id });
-  } catch (error) {
-    res.status(500).send({ error: error.message });
   }
-});
+);
 
-// Handle payment success
-router.get("/success/:sessionId", async (req, res) => {
-  try {
+export const handlePaymentSuccess = asyncHandler(async (req, res) => {
     const { sessionId } = req.params;
-
-    // Retrieve the session from Stripe
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     if (session.payment_status === "paid") {
-      // Update order status in database
       const orderId = session.metadata.orderId;
+
       if (orderId) {
         await Order.findByIdAndUpdate(orderId, {
           orderStatus: "confirmed",
@@ -80,13 +70,4 @@ router.get("/success/:sessionId", async (req, res) => {
         message: "Payment not completed",
       });
     }
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Error verifying payment",
-      error: error.message,
-    });
-  }
-});
-
-export default router;
+  });

@@ -1,4 +1,5 @@
-import AppError from "../utils/appError.js";
+import AppError from "../utils/app-error.utils.js";
+
 /**
  * Middleware to restrict access to certain roles.
  * @param {...string} roles - The roles that are allowed to access the route.
@@ -8,7 +9,6 @@ import AppError from "../utils/appError.js";
 export const restrictTo =
     (...roles) =>
     (req, res, next) => {
-        console.log(req.user.role);
         if (!roles.includes(req.user.role)) {
             return next(
                 new AppError("You do not have permission to perform this action.", 403)

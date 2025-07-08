@@ -1,7 +1,7 @@
-import asyncHandler from "../utils/asyncHandler.js";
-import AppError from "../utils/appError.js";
-import Patient from "../models/patientModel.js";
-import Doctor from "../models/doctorModel.js";
+import asyncHandler from "../utils/async-handler.utils.js";
+import AppError from "../utils/app-error.utils.js";
+import Patient from "../models/patient.model.js";
+import Doctor from "../models/doctor.model.js";
 
 /**
  * Gets the current user's profile data.
@@ -53,7 +53,6 @@ export const getMe = asyncHandler(async (req, res, next) => {
     return next(new AppError("User not found", 404));
   }
 
-  // Convert to plain object and remove sensitive/restricted fields
   let userObj = user.toObject();
   delete userObj.password;
   delete userObj.passwordConfirm;
@@ -88,13 +87,11 @@ export const updateMe = asyncHandler(async (req, res, next) => {
 
   let updatedUser;
   if (req.user.role === "patient") {
-    // Update patient profile
     updatedUser = await Patient.findByIdAndUpdate(req.user.id, req.body, {
       new: true,
       runValidators: true,
     });
   } else if (req.user.role === "doctor") {
-    // Update doctor profile
     updatedUser = await Doctor.findByIdAndUpdate(req.user.id, req.body, {
       new: true,
       runValidators: true,

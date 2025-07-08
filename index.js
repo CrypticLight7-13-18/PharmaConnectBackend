@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./config/db.js";
 import router from "./routes/index.js";
-import handleSocket from "./sockets/chatSockets.js";
+import handleSocket from "./sockets/chat.socket.js";
 import cookieParser from "cookie-parser";
 
 
@@ -25,7 +25,7 @@ const io = new Server(server, {
         methods: ["GET", "POST", "PUT", "DELETE"],
     },
 });
-//allow port 5173 for Vite development server
+
 app.use(
     cors({
         origin: [

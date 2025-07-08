@@ -1,6 +1,5 @@
-import { dummyDoctors } from "../utils/dummyData.js";
 import mongoose from "mongoose";
-import Doctor from "../models/doctorModel.js";
+import Doctor from "../models/doctor.model.js";
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -126,11 +125,8 @@ const seedDoctorData = async() => {
         await mongoose.connect(process.env.MONGO_URI);
         console.log("Connected to MongoDB");
 
-        // Clear existing data
         await Doctor.deleteMany();
-
-        // Create dummy doctors
-        const doctors = await Doctor.insertMany(dummyDoctors);
+        await Doctor.insertMany(dummyDoctors);
 
         console.log("Dummy data inserted successfully!");
         process.exit();

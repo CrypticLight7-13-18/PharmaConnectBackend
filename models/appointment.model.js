@@ -57,7 +57,7 @@ const appointmentSchema = mongoose.Schema({
         default: Date.now,
     },
 }, {
-    timestamps: true, // Automatically manage createdAt and updatedAt
+    timestamps: true,
 });
 
 appointmentSchema.pre("save", async function(next) {

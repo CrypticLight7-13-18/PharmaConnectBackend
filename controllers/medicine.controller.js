@@ -1,8 +1,7 @@
-import Medicine from '../models/medicineModel.js';
-import AppError from '../utils/appError.js';
-import asyncHandler from '../utils/asyncHandler.js';
+import Medicine from '../models/medicine.model.js';
+import AppError from '../utils/app-error.utils.js';
+import asyncHandler from '../utils/async-handler.utils.js';
 
-// Get all medicines
 export const getAllMedicines = asyncHandler(async (req, res, next) => {
     const { page = 1, limit = 10, category } = req.query;
     const filter = category ? { category } : {};
@@ -26,7 +25,6 @@ export const getAllMedicines = asyncHandler(async (req, res, next) => {
 
 });
 
-// Get medicine by ID
 export const getMedicineById = asyncHandler(async (req, res, next) => {
     const medicine = await Medicine.findById(req.params.id);
     
@@ -41,7 +39,6 @@ export const getMedicineById = asyncHandler(async (req, res, next) => {
 
 });
 
-// Search medicines
 export const searchMedicines = asyncHandler(async (req, res, next) => {
     const { q, category, minPrice, maxPrice } = req.query;
     
@@ -74,7 +71,6 @@ export const searchMedicines = asyncHandler(async (req, res, next) => {
 
 });
 
-// Create new medicine (admin only)
 export const createMedicine = asyncHandler(async (req, res, next) => {
     const { name, price, shortDesc, image, category } = req.body;
     
@@ -96,7 +92,6 @@ export const createMedicine = asyncHandler(async (req, res, next) => {
 
 });
 
-// Update medicine (admin only)
 export const updateMedicine = asyncHandler(async (req, res, next) => {
     const medicine = await Medicine.findByIdAndUpdate(
       req.params.id,
@@ -116,7 +111,6 @@ export const updateMedicine = asyncHandler(async (req, res, next) => {
 
 });
 
-// Delete medicine (admin only)
 export const deleteMedicine = asyncHandler(async (req, res, next) => {
     const medicine = await Medicine.findByIdAndDelete(req.params.id);
     
@@ -131,5 +125,4 @@ export const deleteMedicine = asyncHandler(async (req, res, next) => {
       success: true,
       message: 'Medicine deleted successfully'
     });
-
 });

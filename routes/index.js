@@ -1,14 +1,14 @@
-import chatRouter from "./chatRoutes.js";
-import appointmentRouter from "./appointmentRoutes.js";
-import doctorsRouter from "./doctorRoutes.js";
-import userRouter from "./userRoutes.js";
-import medicineRouter from "./medicineRoutes.js";
-import orderRoutes from "./orderRoutes.js";
-import paymentRoutes from "./paymentRoutes.js";
-import protect from "../middlewares/protect.js";
+import chatRouter from "./chat.routes.js";
+import appointmentRouter from "./appointment.routes.js";
+import doctorsRouter from "./doctor.routes.js";
+import userRouter from "./user.routes.js";
+import medicineRouter from "./medicine.routes.js";
+import orderRoutes from "./order.routes.js";
+import paymentRoutes from "./payment.routes.js";
+import protect from "../middlewares/protect.middleware.js";
 
 import express from "express";
-import errorHandler from "../middlewares/errorHandler.js";
+import errorHandler from "../middlewares/error-handler.middleware.js";
 
 const router = express.Router();
 
