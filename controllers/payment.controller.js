@@ -15,12 +15,13 @@ const FRONTEND_URL = process.env.FRONTEND_URL;
  * @param {Object} res - The response object.
  */
 export const createCheckoutSession = asyncHandler(async (req, res) => {
+  const stripe = new Stripe(process.env.STRIPE_BACKEND_SECRET);
   const { orderData } = req.body;
   const paymentMethodTypes = ["card"];
 
   let lineItems = [];
 
-  if (orderData && orderData.cart && orderData.cart.length > 0) {
+  if (orderData?.cart?.length) {
     lineItems = orderData.cart.map((item) => ({
       price_data: {
         currency: "inr",

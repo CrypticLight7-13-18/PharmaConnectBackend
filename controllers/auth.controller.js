@@ -81,14 +81,37 @@ export const login = asyncHandler(async (req, res, next) => {
  * @param {Function} next - The next middleware function.
  */
 export const signUp = asyncHandler(async (req, res, next) => {
-  const { role } = req.body;
+  const { role, userName, email, password, confirmPassword, ...rest } =
+    req.body;
 
+  // basic validation
+  if (!email || !password || !confirmPassword) {
+    return next(
+      new AppError("Email, password and confirmPassword are required", 400)
+    );
+  }
+  if (password !== confirmPassword) {
+    return next(new AppError("Passwords do not match", 400));
+  }
+
+  // select model by role
   let model;
   if (role === Roles.PATIENT) model = Patient;
   else if (role === Roles.DOCTOR) model = Doctor;
   else return next(new AppError("Invalid role specified", 400));
 
-  const newUser = await model.create(req.body);
+  // map fields for mongoose schema
+  const payload = {
+    role,
+    name: userName,
+    email,
+    password,
+    ...rest,
+  };
+
+  const newUser = await model.create(payload);
+
+  // send back JWT and user
   createSendToken(newUser, 201, req, res);
 });
 

@@ -3,6 +3,11 @@ import request from "supertest";
 import { app } from "../index.js";
 import { createTestUserAndLogin } from "./helpers.js";
 
+// tests/chat.test.js
+vi.mock("stripe", () => {
+  return { default: class { checkout = { sessions: { create: async ()=>({id:"x"}) } } } };
+});
+
 // Mock genAI to avoid network
 vi.mock("../utils/ai-client.utils.js", () => ({
   default: {

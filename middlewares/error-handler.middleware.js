@@ -43,65 +43,35 @@ const handleJWTError = () =>
 const handleTokenExpiredError = () =>
   new AppError("Your session is expired. Please login again.", 401);
 
-/**
- * Sends error response in development mode.
- * @param {Object} err - The error object.
- * @param {Object} req - The request object.
- * @param {Object} res - The response object.
- */
-const sendErrDev = (err, req, res) => {
+const buildErrorPayload = (err, includeStack = false) => {
+  const payload = {
+    statusCode: err.statusCode,
+    status: err.status,
+    message: err.message,
+  };
+  if (includeStack) payload.stack = err.stack;
+  return payload;
+};
+
+const sendError = (err, req, res) => {
+  // If API request, respond with JSON
   if (req.originalUrl.startsWith("/api")) {
-    return res.status(err.statusCode).json({
-      status: err.status,
-      message: err.message,
-      error: err,
-      stack: err.stack,
-    });
+    const isDev =
+      process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test";
+
+    // Determine if error is operational; unknown errors shouldn't expose details in prod
+    const payload = buildErrorPayload(err, isDev);
+    if (!err.isOperational && !isDev) {
+      payload.message = "Something went wrong!";
+    }
+
+    return res.status(err.statusCode).json({ success: false, error: payload });
   }
 
+  // Non-API route: render error page (unchanged behaviour)
   res.status(err.statusCode).render("error", {
     title: "Something went wrong!",
     msg: err.message,
-  });
-};
-
-/**
- * Sends error response in production mode.
- * @param {Object} err - The error object.
- * @param {Object} req - The request object.
- * @param {Object} res - The response object.
- */
-const sendErrProd = (err, req, res) => {
-  if (req.originalUrl.startsWith("/api")) {
-    // Operational/Trusted Errors: Send message to client
-    if (err.isOperational) {
-      return res.status(err.statusCode).json({
-        status: err.status,
-        message: err.message,
-      });
-    }
-
-    // Programming or other unknown error: don't leak error information to client
-    console.error("ERROR ❗️");
-
-    return res.status(500).json({
-      status: "error",
-      message: "Something went wrong!",
-    });
-  }
-
-  if (err.isOperational) {
-    return res.status(err.statusCode).render("error", {
-      title: "Something went wrong!",
-      msg: err.message,
-    });
-  }
-
-  console.error("ERROR ❗️");
-
-  return res.status(err.statusCode).render("error", {
-    title: "Something went wrong!",
-    msg: "Please try again later",
   });
 };
 
@@ -116,9 +86,7 @@ export default (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || "Internal Server Error";
 
-  if (process.env.NODE_ENV === "development") {
-    sendErrDev(err, req, res);
-  } else if (process.env.NODE_ENV === "production") {
+  if (process.env.NODE_ENV === "production") {
     let error = { ...err };
     error.message = err.message;
 
@@ -128,7 +96,10 @@ export default (err, req, res, next) => {
     if (err.name === "JsonWebTokenError") error = handleJWTError();
     if (err.name === "TokenExpiredError") error = handleTokenExpiredError();
 
-    sendErrProd(error, req, res);
+    sendError(error, req, res);
+  } else {
+    // development or test
+    sendError(err, req, res);
   }
 
   next();
