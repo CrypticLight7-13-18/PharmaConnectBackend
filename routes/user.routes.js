@@ -20,6 +20,8 @@
 import express from "express";
 import * as authController from "../controllers/auth.controller.js";
 import * as userController from "../controllers/user.controller.js";
+import { loginSchema, signUpSchema } from "../validations/auth.validation.js";
+import { validate } from "../middlewares/validate.middleware.js";
 import protect from "../middlewares/protect.middleware.js";
 
 const router = express.Router();
@@ -29,14 +31,14 @@ const router = express.Router();
  * @desc Log in a user.
  * @access Public
  */
-router.post("/login", authController.login);
+router.post("/login", validate(loginSchema), authController.login);
 
 /**
  * @route POST /api/users/signup
  * @desc Register a new user.
  * @access Public
  */
-router.post("/signup", authController.signUp);
+router.post("/signup", validate(signUpSchema), authController.signUp);
 
 /**
  * @route GET /api/users/logout

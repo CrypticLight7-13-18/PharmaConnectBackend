@@ -4,9 +4,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js",
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "test": "vitest --run"
   },
   "keywords": [],
   "author": "",
@@ -25,10 +25,14 @@
     "openai": "^5.8.2",
     "socket.io": "^4.8.1",
     "stripe": "^18.2.1",
-    "validator": "^13.15.15"
+    "validator": "^13.15.15",
+    "zod": "^3.25.6"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.28.0",
-    "nodemon": "^3.1.10"
+    "mongodb-memory-server": "^8.12.1",
+    "nodemon": "^3.1.10",
+    "supertest": "^6.3.4",
+    "vitest": "^1.4.0"
   }
 }

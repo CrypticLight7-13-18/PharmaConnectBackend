@@ -15,6 +15,12 @@
 import express from "express";
 import * as appointmentController from "../controllers/appointment.controller.js";
 import { restrictTo } from "../middlewares/restrict.middleware.js";
+import { validate } from "../middlewares/validate.middleware.js";
+import {
+  createAppointmentSchema,
+  updateAppointmentSchema,
+} from "../validations/appointment.validation.js";
+import { Roles } from "../constants/enums.js";
 
 const router = express.Router();
 
@@ -25,7 +31,8 @@ const router = express.Router();
  */
 router.post(
   "/",
-  restrictTo("patient"),
+  restrictTo(Roles.PATIENT),
+  validate(createAppointmentSchema),
   appointmentController.createAppointment
 );
 
@@ -36,7 +43,7 @@ router.post(
  */
 router.delete(
   "/:id",
-  restrictTo("patient"),
+  restrictTo(Roles.PATIENT),
   appointmentController.deleteAppointment
 );
 
@@ -47,7 +54,8 @@ router.delete(
  */
 router.patch(
   "/:id",
-  restrictTo("patient"),
+  restrictTo(Roles.PATIENT),
+  validate(updateAppointmentSchema),
   appointmentController.updateAppointment
 );
 
@@ -65,7 +73,7 @@ router.get("/", appointmentController.getAllAppointments);
  */
 router.patch(
   "/:id/report",
-  restrictTo("Doctor"),
+  restrictTo(Roles.DOCTOR),
   appointmentController.updateAppointmentReport
 );
 

@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 /**
  * Mongoose schema for Medicine documents.
  * Represents a medicine product in the application, including its name, price, description, image, and category.

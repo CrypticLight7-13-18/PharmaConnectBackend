@@ -3,6 +3,7 @@ import Doctor from "../models/doctor.model.js";
 import Patient from "../models/patient.model.js";
 import AppError from "../utils/app-error.utils.js";
 import asyncHandler from "../utils/async-handler.utils.js";
+import { Roles, AppointmentStatus } from "../constants/enums.js";
 
 /**
  * Creates a new appointment for a patient with a doctor.
@@ -23,7 +24,7 @@ export const createAppointment = asyncHandler(async (req, res, next) => {
     doctorId,
     appointmentDate: new Date(appointmentDate),
     appointmentTime,
-    status: { $ne: "Cancelled" },
+    status: { $ne: AppointmentStatus.CANCELLED },
   });
 
   if (existingAppointment)
@@ -69,8 +70,8 @@ export const getAllAppointments = asyncHandler(async (req, res, next) => {
 
   let query = {};
 
-  if (userRole === "patient") query.patientId = userId;
-  else if (userRole === "doctor") query.doctorId = userId;
+  if (userRole === Roles.PATIENT) query.patientId = userId;
+  else if (userRole === Roles.DOCTOR) query.doctorId = userId;
 
   const appointments = await Appointment.find(query)
     .populate("doctorId", "name specialization location consultationFee")
@@ -141,7 +142,7 @@ export const updateAppointment = asyncHandler(async (req, res, next) => {
     return next(new AppError("You can only update your own appointments", 400));
   }
 
-  if (appointment.status !== "Pending") {
+  if (appointment.status !== AppointmentStatus.PENDING) {
     return next(new AppError("Only pending appointments can be updated", 400));
   }
 
@@ -150,7 +151,7 @@ export const updateAppointment = asyncHandler(async (req, res, next) => {
       doctorId: appointment.doctorId,
       appointmentDate: new Date(appointmentDate || appointment.appointmentDate),
       appointmentTime: appointmentTime || appointment.appointmentTime,
-      status: { $ne: "Cancelled" },
+      status: { $ne: AppointmentStatus.CANCELLED },
       _id: { $ne: appointment._id },
     });
 
@@ -195,7 +196,7 @@ export const deleteAppointment = asyncHandler(async (req, res, next) => {
     return next(new AppError("You can only access your own appointments", 403));
   }
 
-  appointment.status = "Cancelled";
+  appointment.status = AppointmentStatus.CANCELLED;
   await appointment.save();
 
   res.status(200).json({

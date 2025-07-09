@@ -1,3 +1,8 @@
+import mongoose from "mongoose";
+import bcrypt from "bcrypt";
+import validator from "validator";
+import { Roles } from "../constants/enums.js";
+
 /**
  * Mongoose schema for Patient documents.
  * Represents a patient user in the application, including authentication, profile details, and references to appointments, chats, and orders.
@@ -41,8 +46,8 @@ const patientSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["patient", "doctor"],
-    default: "patient",
+    enum: Object.values(Roles),
+    default: Roles.PATIENT,
   },
   password: {
     type: String,

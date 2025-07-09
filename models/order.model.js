@@ -1,3 +1,6 @@
+import mongoose from "mongoose";
+import { OrderStatus, PaymentStatus } from "../constants/enums.js";
+
 /**
  * Mongoose schema for OrderItem subdocuments.
  * Represents an individual item in an order, referencing a Medicine and including quantity and unit price.
@@ -68,12 +71,12 @@ const orderSchema = new mongoose.Schema(
     },
     orderStatus: {
       type: String,
-      enum: ["pending", "delivered", "cancelled"],
-      default: "pending",
+      enum: Object.values(OrderStatus),
+      default: OrderStatus.PENDING,
     },
     paymentStatus: {
       type: String,
-      enum: ["paid", "pending"],
+      enum: Object.values(PaymentStatus),
     },
     deliveryDate: {
       type: Date,

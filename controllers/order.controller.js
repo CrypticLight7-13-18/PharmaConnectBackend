@@ -2,6 +2,7 @@ import Order from "../models/order.model.js";
 import Medicine from "../models/medicine.model.js";
 import AppError from "../utils/app-error.utils.js";
 import asyncHandler from "../utils/async-handler.utils.js";
+import { OrderStatus } from "../constants/enums.js";
 
 /**
  * Creates a new order for the authenticated user.
@@ -154,7 +155,7 @@ export const getAllOrders = asyncHandler(async (req, res, next) => {
  */
 export const updateOrderStatus = asyncHandler(async (req, res, next) => {
   const { status } = req.body;
-  const validStatuses = ["pending", "delivered", "cancelled"];
+  const validStatuses = Object.values(OrderStatus);
 
   if (!validStatuses.includes(status)) {
     return res.status(400).json({
@@ -194,15 +195,15 @@ export const cancelOrder = asyncHandler(async (req, res, next) => {
     return next(new AppError("Order not found", 404));
   }
 
-  if (order.orderStatus === "delivered") {
+  if (order.orderStatus === OrderStatus.DELIVERED) {
     return next(new AppError("Cannot cancel delivered order", 400));
   }
 
-  if (order.orderStatus === "cancelled") {
+  if (order.orderStatus === OrderStatus.CANCELLED) {
     return next(new AppError("Order Already cancelled", 400));
   }
 
-  order.orderStatus = "cancelled";
+  order.orderStatus = OrderStatus.CANCELLED;
   await order.save();
 
   res.json({

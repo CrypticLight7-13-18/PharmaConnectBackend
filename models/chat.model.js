@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 /**
  * MessageSchema fields:
  * - role: The sender's role ("System", "User", or "Assistant"). Required.

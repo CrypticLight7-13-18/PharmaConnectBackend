@@ -4,6 +4,7 @@ import Patient from "../models/patient.model.js";
 import Doctor from "../models/doctor.model.js";
 import AppError from "../utils/app-error.utils.js";
 import asyncHandler from "../utils/async-handler.utils.js";
+import { Roles } from "../constants/enums.js";
 
 /**
  * Creates a JWT token for a given user ID.
@@ -60,8 +61,8 @@ export const login = asyncHandler(async (req, res, next) => {
 
   let model;
 
-  if (role === "patient") model = Patient;
-  else if (role === "doctor") model = Doctor;
+  if (role === Roles.PATIENT) model = Patient;
+  else if (role === Roles.DOCTOR) model = Doctor;
   else return next(new AppError("Invalid role specified", 400));
 
   const user = await model.findOne({ email }).select("+password");
@@ -83,8 +84,8 @@ export const signUp = asyncHandler(async (req, res, next) => {
   const { role } = req.body;
 
   let model;
-  if (role === "patient") model = Patient;
-  else if (role === "doctor") model = Doctor;
+  if (role === Roles.PATIENT) model = Patient;
+  else if (role === Roles.DOCTOR) model = Doctor;
   else return next(new AppError("Invalid role specified", 400));
 
   const newUser = await model.create(req.body);

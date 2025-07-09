@@ -1,3 +1,6 @@
+import mongoose from "mongoose";
+import { AppointmentStatus } from "../constants/enums.js";
+
 /**
  * Mongoose schema for Appointment documents.
  * Represents an appointment between a patient and a doctor, including scheduling, status, fee, and optional consultation report.
@@ -54,7 +57,8 @@ const appointmentSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      default: "Pending",
+      enum: Object.values(AppointmentStatus),
+      default: AppointmentStatus.PENDING,
     },
     consultationFee: {
       type: Number,

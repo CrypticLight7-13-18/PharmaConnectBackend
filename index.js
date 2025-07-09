@@ -18,6 +18,8 @@ import connectDB from "./config/db.js";
 import router from "./routes/index.js";
 import handleSocket from "./sockets/chat.socket.js";
 import cookieParser from "cookie-parser";
+import errorHandler from "./middlewares/error-handler.middleware.js";
+import AppError from "./utils/app-error.utils.js";
 
 dotenv.config();
 connectDB();
@@ -64,7 +66,13 @@ app.get("/", (req, res) => {
   res.send("Welcome to the Chat API");
 });
 
-// Start the HTTP and WebSocket server
-server.listen(PORT, () =>
-  console.log(`🚀 Server running at http://localhost:${PORT}`)
-);
+// Global error-handling middleware (must be the last app.use)
+app.use(errorHandler);
+
+if (process.env.NODE_ENV !== "test") {
+  server.listen(PORT, () =>
+    console.log(`🚀 Server running at http://localhost:${PORT}`)
+  );
+}
+
+export { app, server };
