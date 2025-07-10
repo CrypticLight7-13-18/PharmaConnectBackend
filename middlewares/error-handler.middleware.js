@@ -64,7 +64,7 @@ const sendError = (err, req, res) => {
     if (!err.isOperational && !isDev) {
       payload.message = "Something went wrong!";
     }
-
+    // console.log(err)
     return res.status(err.statusCode).json({ success: false, error: payload });
   }
 

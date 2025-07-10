@@ -11,11 +11,15 @@ import AppError from "../utils/app-error.utils.js";
  */
 export const validate = (schema, target = "body") => {
   return (req, res, next) => {
+    console.log(req[target])
     try {
       if (schema && typeof schema.safeParse === "function") {
+        // console.log(schema)
         const result = schema.safeParse(req[target]);
+        console.log(result)
         if (!result.success) {
           const msg = result.error.errors.map((e) => e.message).join("; ");
+          // console.log(msg)
           return next(new AppError(msg, 400));
         }
         // attach parsed data

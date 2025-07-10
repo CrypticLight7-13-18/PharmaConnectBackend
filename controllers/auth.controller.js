@@ -81,16 +81,19 @@ export const login = asyncHandler(async (req, res, next) => {
  * @param {Function} next - The next middleware function.
  */
 export const signUp = asyncHandler(async (req, res, next) => {
-  const { role, userName, email, password, confirmPassword, ...rest } =
+  const { role, name, email, password, passwordConfirm, ...rest } =
     req.body;
+    // console.log("signUp called")
 
   // basic validation
-  if (!email || !password || !confirmPassword) {
+  if (!email || !password || !passwordConfirm) {
+    console.log(email, password, passwordConfirm)
     return next(
-      new AppError("Email, password and confirmPassword are required", 400)
+      new AppError("Email, password and passwordConfirm are required", 400)
     );
   }
-  if (password !== confirmPassword) {
+  if (password !== passwordConfirm) {
+    console.log(password, passwordConfirm)
     return next(new AppError("Passwords do not match", 400));
   }
 
@@ -100,16 +103,26 @@ export const signUp = asyncHandler(async (req, res, next) => {
   else if (role === Roles.DOCTOR) model = Doctor;
   else return next(new AppError("Invalid role specified", 400));
 
+  // check if user already exists
+  let existingUser = model.find({email});
+  if(existingUser){
+    return next(new AppError("User Already Exists!", 400))
+  }
+
   // map fields for mongoose schema
   const payload = {
     role,
-    name: userName,
+    name,
     email,
     password,
+    passwordConfirm,
     ...rest,
   };
 
+  // console.log(payload)
+
   const newUser = await model.create(payload);
+  // console.log(newUser)
 
   // send back JWT and user
   createSendToken(newUser, 201, req, res);
