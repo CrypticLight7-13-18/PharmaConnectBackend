@@ -7,7 +7,7 @@ export const createAppointmentSchema = z.object({
     .regex(/\d{4}-\d{2}-\d{2}/, "Invalid date format (YYYY-MM-DD)"),
   appointmentTime: z
     .string()
-    .regex(/^\d{2}:\d{2}$/, "Invalid time format (HH:mm)"),
+    .regex(/^\d{2}:\d{2}\s(AM|PM)$/i, "Invalid time format (HH:mm)"),
 });
 
 export const updateAppointmentSchema = z.object({
@@ -17,6 +17,6 @@ export const updateAppointmentSchema = z.object({
     .optional(),
   appointmentTime: z
     .string()
-    .regex(/^\d{2}:\d{2}$/)
+    .regex(/^\d{2}:\d{2}\s(AM|PM)$/i, "Invalid time format (HH:mm)")
     .optional(),
 });

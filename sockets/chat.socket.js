@@ -5,6 +5,24 @@
  * @param {import('socket.io').Server} io - The Socket.io server instance.
  */
 import * as chatController from "../controllers/chat.controller.js";
+import AppError from "../utils/app-error.utils.js";
+
+/**
+ * Verify chat ownership before allowing access
+ * @param {Object} user - The authenticated user
+ * @param {string} chatId - The chat ID to verify access for
+ * @returns {Promise<boolean>} - Whether user has access
+ */
+const verifyChatAccess = async (user, chatId) => {
+  const chatIds = user.chatIds || [];
+  const hasAccess = chatIds.some((id) => id.toString() === chatId);
+
+  if (!hasAccess) {
+    throw new AppError("Access denied to this chat", 403);
+  }
+
+  return true;
+};
 
 /**
  * Handles socket connections for chat and messaging.
@@ -17,7 +35,7 @@ import * as chatController from "../controllers/chat.controller.js";
  */
 export default function handleSocket(io) {
   io.on("connection", (socket) => {
-    console.log("Client connected:", socket.id);
+    console.log("Client connected:", socket.id, "User:", socket.user?.name);
 
     /**
      * Handles a new message event.
@@ -34,6 +52,17 @@ export default function handleSocket(io) {
           socket.emit("error", { message: "Invalid message data" });
           return;
         }
+
+        // Verify user has access to this chat
+        try {
+          await verifyChatAccess(socket.user, chatId);
+        } catch (error) {
+          socket.emit("error", { message: error.message });
+          return;
+        }
+
+        // Authenticate and verify chat access
+        await verifyChatAccess(socket.user, chatId);
 
         const msg = await chatController.addMessageToChat(chatId, {
           role,
@@ -81,6 +110,17 @@ export default function handleSocket(io) {
           socket.emit("error", { message: "Chat ID is required to join" });
           return;
         }
+
+        // Verify user has access to this chat
+        try {
+          await verifyChatAccess(socket.user, chatId);
+        } catch (error) {
+          socket.emit("error", { message: error.message });
+          return;
+        }
+
+        // Authenticate and verify chat access
+        await verifyChatAccess(socket.user, chatId);
 
         socket.join(chatId);
 

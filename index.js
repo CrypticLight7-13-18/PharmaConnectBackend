@@ -15,10 +15,14 @@ import { Server } from "socket.io";
 import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./config/db.js";
+import { corsOptions, socketCorsOptions } from "./config/cors.js";
 import router from "./routes/index.js";
 import handleSocket from "./sockets/chat.socket.js";
 import cookieParser from "cookie-parser";
 import errorHandler from "./middlewares/error-handler.middleware.js";
+import socketAuth from "./middlewares/socket-auth.middleware.js";
+import { sanitizeInput, mongoSanitizeMiddleware } from "./middlewares/sanitize.middleware.js";
+import { apiLimiter } from "./middlewares/rate-limit.middleware.js";
 import AppError from "./utils/app-error.utils.js";
 
 dotenv.config();
@@ -27,30 +31,24 @@ connectDB();
 const app = express();
 const server = http.createServer(app);
 
-const allowedOrigins = [
-  "https://fantastic-goggles-57g4pxpqqjjhv47g-5173.app.github.dev",
-  "https://pharmaproject.netlify.app",
-  "http://localhost:5173",
-  "https://reimagined-barnacle-9g5w9p956x6276g9-5173.app.github.dev",
-];
-
 const io = new Server(server, {
-  cors: {
-    origin: allowedOrigins,
-    methods: ["GET", "POST", "PUT", "DELETE"],
-  },
+  cors: socketCorsOptions,
 });
 
-app.use(
-  cors({
-    origin: allowedOrigins,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-    credentials: true,
-  })
-);
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
+
+// Apply input sanitization globally - BEFORE routes
+app.use(sanitizeInput);
+app.use(mongoSanitizeMiddleware);
+
+// Apply rate limiting to all API routes
+app.use("/api", apiLimiter);
 app.use("/api", router);
+
+// Apply socket authentication middleware
+io.use(socketAuth);
 
 handleSocket(io);
 
