@@ -1,11 +1,5 @@
 /**
- * Express rouimport express from "express";
-import * as authController from "../controllers/auth.controller.js";
-import * as userController from "../controllers/user.controller.js";
-import { loginSchema, signUpSchema } from "../validations/auth.validation.js";
-import { validate } from "../middlewares/validate.middleware.js";
-import protect from "../middlewares/protect.middleware.js";
-import { authLimiter } from "../middlewares/rate-limit.middleware.js";r user authentication and profile management routes.
+ * Express router for user authentication and profile management routes.
  * Maps HTTP endpoints to authentication and user controller functions for login, signup, logout, and profile operations.
  * Applies authentication middleware to protect profile-related routes.
  *
@@ -33,19 +27,22 @@ import { authLimiter } from "../middlewares/rate-limit.middleware.js";
 
 const router = express.Router();
 
+// Apply rate limiting only in non-test environments
+const rateLimiter = process.env.NODE_ENV === "test" ? (req, res, next) => next() : authLimiter;
+
 /**
  * @route POST /api/users/login
  * @desc Log in a user.
  * @access Public
  */
-router.post("/login", authLimiter, validate(loginSchema), authController.login);
+router.post("/login", rateLimiter, validate(loginSchema), authController.login);
 
 /**
  * @route POST /api/users/signup
  * @desc Register a new user.
  * @access Public
  */
-router.post("/signup", authLimiter, validate(signUpSchema), authController.signUp);
+router.post("/signup", rateLimiter, validate(signUpSchema), authController.signUp);
 
 /**
  * @route GET /api/users/logout

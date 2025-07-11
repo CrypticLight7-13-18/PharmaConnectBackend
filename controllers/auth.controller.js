@@ -106,6 +106,7 @@ export const signUp = asyncHandler(async (req, res, next) => {
     name: userName,
     email,
     password,
+    passwordConfirm: confirmPassword,
     ...rest,
   };
 

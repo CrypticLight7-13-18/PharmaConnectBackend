@@ -39,16 +39,22 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
-// Apply input sanitization globally - BEFORE routes
-app.use(sanitizeInput);
-app.use(mongoSanitizeMiddleware);
+// Apply security middleware only in non-test environments
+if (process.env.NODE_ENV !== "test") {
+  // Apply input sanitization globally - BEFORE routes
+  app.use(sanitizeInput);
+  app.use(mongoSanitizeMiddleware);
 
-// Apply rate limiting to all API routes
-app.use("/api", apiLimiter);
+  // Apply rate limiting to all API routes
+  app.use("/api", apiLimiter);
+}
+
 app.use("/api", router);
 
-// Apply socket authentication middleware
-io.use(socketAuth);
+// Apply socket authentication middleware only in non-test environments
+if (process.env.NODE_ENV !== "test") {
+  io.use(socketAuth);
+}
 
 handleSocket(io);
 

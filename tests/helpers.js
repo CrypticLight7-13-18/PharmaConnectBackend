@@ -11,8 +11,14 @@ export const createTestUserAndLogin = async () => {
     dateOfBirth: "1990-01-01",
   };
 
-  await request(app).post("/api/users/signup").send(userData);
+  // Create user
+  const signupRes = await request(app).post("/api/users/signup").send(userData);
+  
+  if (signupRes.status !== 201) {
+    throw new Error(`Signup failed with status ${signupRes.status}: ${signupRes.text}`);
+  }
 
+  // Login user
   const loginRes = await request(app)
     .post("/api/users/login")
     .send({
@@ -21,8 +27,21 @@ export const createTestUserAndLogin = async () => {
       role: "patient",
     });
 
-  const cookie = loginRes.headers["set-cookie"].find((c) =>
-    c.startsWith("jwt")
-  );
-  return { cookie, userId: loginRes.body.user._id };
+  if (loginRes.status !== 200) {
+    throw new Error(`Login failed with status ${loginRes.status}: ${loginRes.text}`);
+  }
+
+  // Find JWT cookie if it exists
+  let cookie = null;
+  if (loginRes.headers["set-cookie"]) {
+    cookie = loginRes.headers["set-cookie"].find((c) =>
+      c.startsWith("jwt")
+    );
+  }
+
+  return { 
+    cookie, 
+    userId: loginRes.body.user?._id || loginRes.body.data?.user?._id,
+    token: loginRes.body.token || loginRes.body.data?.token
+  };
 };
